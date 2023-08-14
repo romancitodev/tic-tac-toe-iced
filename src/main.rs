@@ -79,27 +79,27 @@ impl Application for App {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, iced::Renderer<Self::Theme>> {
-        let state = self.game.state();
+        let activate = self.game.state().is_playable();
         container(
             column!(
                 row![
-                    text_button(self.game.board()[0][0].as_str(), 0, 0, state.is_playable()),
-                    text_button(self.game.board()[0][1].as_str(), 0, 1, state.is_playable()),
-                    text_button(self.game.board()[0][2].as_str(), 0, 2, state.is_playable())
+                    text_button(self.game.board()[0][0].as_str(), 0, 0, activate),
+                    text_button(self.game.board()[0][1].as_str(), 0, 1, activate),
+                    text_button(self.game.board()[0][2].as_str(), 0, 2, activate)
                 ]
                 .align_items(iced::Alignment::Center)
                 .spacing(10),
                 row![
-                    text_button(self.game.board()[1][0].as_str(), 1, 0, state.is_playable()),
-                    text_button(self.game.board()[1][1].as_str(), 1, 1, state.is_playable()),
-                    text_button(self.game.board()[1][2].as_str(), 1, 2, state.is_playable())
+                    text_button(self.game.board()[1][0].as_str(), 1, 0, activate),
+                    text_button(self.game.board()[1][1].as_str(), 1, 1, activate),
+                    text_button(self.game.board()[1][2].as_str(), 1, 2, activate)
                 ]
                 .align_items(iced::Alignment::Center)
                 .spacing(10),
                 row![
-                    text_button(self.game.board()[2][0].as_str(), 2, 0, state.is_playable()),
-                    text_button(self.game.board()[2][1].as_str(), 2, 1, state.is_playable()),
-                    text_button(self.game.board()[2][2].as_str(), 2, 2, state.is_playable())
+                    text_button(self.game.board()[2][0].as_str(), 2, 0, activate),
+                    text_button(self.game.board()[2][1].as_str(), 2, 1, activate),
+                    text_button(self.game.board()[2][2].as_str(), 2, 2, activate)
                 ]
                 .align_items(iced::Alignment::Center)
                 .spacing(10),
