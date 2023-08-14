@@ -131,24 +131,27 @@ impl Computer {
     }
 
     pub fn best_play(&mut self, mut board: Board) -> (usize, usize) {
-        let (mut m, alpha) = (i32::MIN, i32::MAX);
-        let (mut d, beta) = (i32::MIN, i32::MAX);
-        let mut result = (0, 0);
+        let mut best_score = i32::MIN;
+        let mut best_move = (0, 0);
 
-        let board = &mut board;
+        let actions = self.actions(&board); // Make sure actions() is implemented correctly
 
-        for (row, col) in self.actions(board) {
-            self.set_move(board, Entity::Computer, col, row);
-            let (value, depth) = self.minimax(board, Entity::Human, alpha, beta, 0);
-            if (value > m) | (value == m && d < depth) {
-                result = (col, row);
-                m = value;
-                d = depth;
+        for (row, col) in actions {
+            if board[row][col] == Entity::Empty {
+                self.set_move(&mut board, Entity::Computer, row, col);
+
+                let (score, _) = self.minimax(&mut board, Entity::Human, i32::MIN, i32::MAX, 0);
+
+                self.undo_move(&mut board, row, col);
+
+                if score > best_score {
+                    best_score = score;
+                    best_move = (row, col);
+                }
             }
-            self.undo_move(board, col, row);
         }
 
-        result
+        best_move
     }
 
     fn minimax(
