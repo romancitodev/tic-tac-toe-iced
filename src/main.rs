@@ -131,19 +131,19 @@ impl Computer {
     }
 
     pub fn best_play(&mut self, mut board: Board) -> (usize, usize) {
-        let (mut score, mut depth) = (i32::MIN, i32::MAX);
-        let (min_score, max_score) = (i32::MIN, i32::MAX);
+        let (mut m, alpha) = (i32::MIN, i32::MAX);
+        let (mut d, beta) = (i32::MIN, i32::MAX);
         let mut result = (0, 0);
 
         let board = &mut board;
 
         for (row, col) in self.actions(board) {
             self.set_move(board, Entity::Computer, col, row);
-            let (v, d) = self.minimax(board, Entity::Human, min_score, max_score, 0);
-            if (v > score) | (v == score && d < depth) {
+            let (value, depth) = self.minimax(board, Entity::Human, alpha, beta, 0);
+            if (value > m) | (value == m && d < depth) {
                 result = (col, row);
-                score = v;
-                depth = d;
+                m = value;
+                d = depth;
             }
             self.undo_move(board, col, row);
         }
@@ -160,37 +160,40 @@ impl Computer {
         mut depth: i32,
     ) -> (i32, i32) /* (score, depth) */ {
         // Check if the board is finished:
-        if self.is_winner(player, board) | self.is_winner(!player, board) {
+        if self.is_winner(player, board)
+            | self.is_winner(!player, board)
+            | board.iter().flatten().all(|e| *e != Entity::Empty)
+        {
             return (self.evaluate(board), depth);
         }
         // set the functions:
         let func: fn(i32, i32) -> i32;
-        let mut score;
+        let mut m;
         if player == Entity::Computer {
             func = |a: i32, b: i32| a.max(b);
-            score = i32::MIN;
+            m = i32::MIN;
         } else {
             func = |a: i32, b: i32| a.min(b);
-            score = i32::MAX;
+            m = i32::MAX;
         }
 
         for (row, col) in self.actions(board) {
             self.set_move(board, player, row, col);
             let (value, m_depth) = self.minimax(board, !player, alpha, beta, depth + 1);
             depth = m_depth;
-            score = func(score, value);
+            m = func(m, value);
             self.undo_move(board, row, col);
             if player == Entity::Computer {
-                alpha = func(alpha, value);
+                alpha = func(alpha, m);
             } else {
-                beta = func(beta, value);
+                beta = func(beta, m);
             }
             if beta <= alpha {
                 break;
             }
         }
 
-        (score, depth)
+        (m, depth)
     }
 
     fn actions(&self, board: &Board) -> Vec<(usize, usize)> {
@@ -275,8 +278,8 @@ impl Application for App {
 
     fn update(&mut self, msg: Self::Message) -> iced::Command<Self::Message> {
         if self.game.state() == GameState::Ready {
-            self.game.start(Entity::Computer);
-            self.ia.start(Entity::Human);
+            self.game.start(Entity::Human);
+            self.ia.start(Entity::Computer);
         };
         match msg {
             Message::UserClicked(x, y) => {
@@ -284,7 +287,6 @@ impl Application for App {
                 self.update_text();
                 if let GameState::Playing(_) = self.game.state() {
                     let (ia_x, ia_y) = self.ia.best_play(self.game.board);
-                    println!("{x} {y} :: {ia_x} {ia_y}");
                     return self.update(Message::ComputerClicked(ia_x, ia_y));
                 }
             }
