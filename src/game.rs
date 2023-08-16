@@ -158,7 +158,7 @@ impl Computer {
             | self.is_winner(!player, board)
             | board.iter().flatten().all(|e| *e != Entity::Empty)
         {
-            return (self.evaluate(board), depth);
+            return (self.evaluate(board, depth), depth);
         }
         // set the functions:
         let func: fn(i32, i32) -> i32;
@@ -202,11 +202,11 @@ impl Computer {
         positions
     }
 
-    fn evaluate(&self, board: &Board) -> i32 {
+    fn evaluate(&self, board: &Board, depth: i32) -> i32 {
         if self.is_winner(Entity::Computer, board) {
-            return 1;
+            return i32::MAX - depth;
         } else if self.is_winner(Entity::Human, board) {
-            return -1;
+            return i32::MIN + depth;
         }
         0
     }
